@@ -1,0 +1,110 @@
+{% extends 'components/templates/base.html' %}
+{% set page_title = "Submit Feedback | AI Job Fraud Detection" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block body_class %}feedback-modern-shell{% endblock %}
+
+{% block content %}
+    <div class="feedback-gradient"></div>
+    <canvas id="feedback-particles"></canvas>
+    <div class="feedback-shapes" aria-hidden="true">
+        <div class="shape s1"></div>
+        <div class="shape s2"></div>
+        <div class="shape s3"></div>
+        <div class="shape s4"></div>
+        <div class="shape s5"></div>
+        <div class="shape s6"></div>
+        <div class="shape s7"></div>
+        <div class="shape s8"></div>
+        <div class="shape s9"></div>
+    </div>
+    <div class="feedback-waves" aria-hidden="true"></div>
+
+    <main class="feedback-modern-container">
+        <section class="feedback-modern-card glass lift" id="feedback-card">
+            <header class="feedback-modern-head">
+                <div class="chip">We value your thoughts</div>
+                <div>
+                    <p class="eyebrow">AI Job Fraud Detection</p>
+                    <h1>Tell us how we can improve</h1>
+                    <p class="lede">Your feedback helps keep our fraud defenses sharp.</p>
+                </div>
+            </header>
+
+            {% if success %}<p class="success-msg">{{ success }}</p>{% endif %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="feedback-modern-form" id="feedback-form">
+                <div class="field floating">
+                    <input type="text" id="fb-name" name="name" placeholder=" ">
+                    <label for="fb-name">Name</label>
+                    <span class="field-underline"></span>
+                </div>
+                <div class="field floating">
+                    <input type="email" id="fb-email" name="email" placeholder=" ">
+                    <label for="fb-email">Email</label>
+                    <span class="field-underline"></span>
+                </div>
+                    <div class="field floating">
+                    <textarea id="message" name="message" required placeholder=" " rows="5">{{ request.form.message }}</textarea>
+                    <label for="message">Your feedback</label>
+                    <span class="field-underline"></span>
+                    <div class="char-count"><span id="fbCount">{{ request.form.message|length if request.form.message else 0 }}</span> chars</div>
+                </div>
+
+                <button type="submit" class="btn-gradient" id="fb-btn">
+                    <span>Send feedback</span>
+                    <i class="fa fa-paper-plane"></i>
+                    <span class="ripple"></span>
+                </button>
+            </form>
+            <footer class="feedback-modern-footer">
+                <a href="{{ url_for('dashboard') }}" class="ghost-link">Back to dashboard</a>
+            </footer>
+        </section>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% set canvas_id = 'feedback-particles' %}
+    {% include 'components/molecules/ambient_particles.html' %}
+    <script>
+    const msg = document.getElementById("message");
+    const counter = document.getElementById("fbCount");
+    const form = document.getElementById("feedback-form");
+    const card = document.getElementById("feedback-card");
+    counter.innerText = msg.value.length;
+    msg.addEventListener("input", () => {
+        counter.innerText = msg.value.length;
+        msg.classList.toggle("has-text", msg.value.trim().length > 0);
+    });
+    form.addEventListener("submit", (e) => {
+        if (!msg.value.trim()) {
+            e.preventDefault();
+            card.classList.remove("shake");
+            void card.offsetWidth;
+            card.classList.add("shake");
+            msg.focus();
+        }
+    });
+
+    const btn = document.getElementById("fb-btn");
+    btn.addEventListener("click", (e) => {
+        const ripple = btn.querySelector(".ripple");
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + "px";
+        ripple.style.left = e.clientX - rect.left - size / 2 + "px";
+        ripple.style.top = e.clientY - rect.top - size / 2 + "px";
+        ripple.classList.remove("show");
+        void ripple.offsetWidth;
+        ripple.classList.add("show");
+    });
+    </script>
+{% endblock %}

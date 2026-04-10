@@ -1,0 +1,117 @@
+{% extends 'components/templates/base.html' %}
+{% set page_title = "Ask Gemini | AI Job Fraud Detection" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block body_class %}ask-shell{% endblock %}
+
+{% block content %}
+    <div class="ask-gradient"></div>
+    <canvas id="ask-particles"></canvas>
+    <div class="ask-waves" aria-hidden="true"></div>
+    <div class="ask-shapes">
+        <span class="shape a1"></span>
+        <span class="shape a2"></span>
+        <span class="shape a3"></span>
+        <span class="shape a4"></span>
+        <span class="shape a5"></span>
+        <span class="shape a6"></span>
+    </div>
+
+    <main class="ask-container">
+        <section class="ask-card glass lift" id="ask-card">
+            <header class="ask-head">
+                <div class="chip">Ask Gemini</div>
+                <div>
+                    <p class="eyebrow">AI Job Fraud Detection</p>
+                    <h1>Ask anything about job safety and scams</h1>
+                    <p class="lede">Get quick guidance on red flags, fraud patterns, and safer hiring steps.</p>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% if error %}
+                <p class="error-chip">{{ error }}</p>
+            {% endif %}
+
+            <form method="POST" class="ask-form" id="ask-form">
+                <div class="field floating">
+                    {% set should_clear = 1 if answer else 0 %}
+                    <textarea id="question" name="question" required placeholder=" " data-clear="{{ should_clear }}">{{ '' if answer else request.form.question }}</textarea>
+                    <label for="question">Your question</label>
+                    <span class="field-underline"></span>
+                    <div class="char-count"><span id="askCount">{{ 0 if answer else (request.form.question|length if request.form.question else 0) }}</span> chars</div>
+                </div>
+
+                <button type="submit" class="btn-gradient" id="ask-btn">
+                    <span>Ask Gemini</span>
+                    <i class="fa fa-wand-magic-sparkles"></i>
+                    <span class="ripple"></span>
+                </button>
+            </form>
+
+            {% if answer %}
+                <div class="answer-card glass lift">
+                    <p class="eyebrow">Answer</p>
+                    <p class="answer-text">{{ answer }}</p>
+                </div>
+            {% endif %}
+
+            <footer class="ask-footer">
+                <a href="{{ url_for('dashboard') }}" class="ghost-link">Back to dashboard</a>
+            </footer>
+        </section>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% set canvas_id = 'ask-particles' %}
+    {% include 'components/molecules/ambient_particles.html' %}
+    <script>
+    const textarea = document.getElementById("question");
+    const counter = document.getElementById("askCount");
+    const form = document.getElementById("ask-form");
+    const card = document.getElementById("ask-card");
+
+    if (textarea.dataset.clear === "1") {
+        textarea.value = "";
+        counter.innerText = "0";
+        textarea.classList.remove("has-text");
+    } else {
+        counter.innerText = textarea.value.length;
+    }
+
+    textarea.addEventListener("input", () => {
+        counter.innerText = textarea.value.length;
+        textarea.classList.toggle("has-text", textarea.value.trim().length > 0);
+    });
+
+    form.addEventListener("submit", (e) => {
+        if (!textarea.value.trim()) {
+            e.preventDefault();
+            card.classList.remove("shake");
+            void card.offsetWidth;
+            card.classList.add("shake");
+            textarea.focus();
+        }
+    });
+
+    const btn = document.getElementById("ask-btn");
+    btn.addEventListener("click", (e) => {
+        const ripple = btn.querySelector(".ripple");
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + "px";
+        ripple.style.left = e.clientX - rect.left - size / 2 + "px";
+        ripple.style.top = e.clientY - rect.top - size / 2 + "px";
+        ripple.classList.remove("show");
+        void ripple.offsetWidth;
+        ripple.classList.add("show");
+    });
+    </script>
+{% endblock %}

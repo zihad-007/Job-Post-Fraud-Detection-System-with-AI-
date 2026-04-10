@@ -1,0 +1,19 @@
+{
+  "dataset_name": "Kaggle Fake Job Postings + Fake/Real Job Postings 3000x25 + Synthetic Fake Postings",
+  "dataset_paths": [
+    "data\\fake_job_postings.csv",
+    "d:\\SWE Design Capstone Project\\dataset\\fake_real_job_postings_3000x25.csv",
+    "d:\\SWE Design Capstone Project\\dataset\\Fake Postings.csv"
+  ],
+  "rows": 28999,
+  "fraudulent_rows": 12187,
+  "real_rows": 16812,
+  "train_split": 0.8,
+  "version": "2.0",
+  "trained_on": "2026-03-31T17:45:33.492849+00:00",
+  "model_type": "LogisticRegression + TF-IDF (1-2 grams)",
+  "metrics": {
+    "accuracy": 0.9869,
+    "f1": 0.9842
+  }
+}

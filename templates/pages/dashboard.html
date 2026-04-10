@@ -1,0 +1,249 @@
+{% extends 'components/templates/dashboard.html' %}
+{% set page_title = "Dashboard | AI Job Fraud Detection" %}
+{% set active = 'dashboard' %}
+
+{% block dash_content %}
+    <header class="dash-topbar">
+        <div class="left">
+            <button class="icon-btn ghost toggle-sidebar" id="sidebar-open" aria-label="Open menu">
+                <i class="fa fa-bars"></i>
+            </button>
+            <div>
+                <p class="eyebrow">Hello, {{ session['username'] }}</p>
+                <h1>Fraud intelligence overview</h1>
+            </div>
+        </div>
+        <div class="top-actions">
+            <div class="sla-group">
+                <span class="sla-badge"><i class="fa fa-gauge-high"></i> Avg time {{ '%.1f'|format(sla_avg_ms/1000) }}s</span>
+                <span class="sla-badge uptime"><i class="fa fa-signal-bars"></i> Uptime {{ '%.2f'|format(sla_uptime) }}%</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="grid-panels">
+        <div class="panel glass lift outcomes-panel">
+            <div class="panel-head">
+                <div>
+                    <p class="eyebrow">Outcomes</p>
+                    <h3>Fraud vs real</h3>
+                </div>
+            </div>
+            <canvas id="doughnutChart" class="chart-canvas" height="210"></canvas>
+            <div class="loading-bar" aria-hidden="true"></div>
+        </div>
+
+        <div class="panel glass lift submissions-panel">
+            <div class="panel-head">
+                <div>
+                    <p class="eyebrow">Submissions</p>
+                    <h3>30-day trend</h3>
+                </div>
+            </div>
+            <canvas id="lineChart" class="chart-canvas" height="200"></canvas>
+            <div class="loading-bar" aria-hidden="true"></div>
+        </div>
+    </section>
+
+    <section class="grid-panels">
+        <div class="panel glass lift distribution-panel">
+            <div class="panel-head">
+                <div>
+                    <p class="eyebrow">Distribution</p>
+                    <h3>Word count vs rule score</h3>
+                </div>
+            </div>
+            <canvas id="scatterChart" class="chart-canvas" height="200"></canvas>
+            <div class="loading-bar" aria-hidden="true"></div>
+        </div>
+
+        <div class="panel glass lift signals-panel">
+            <div class="panel-head">
+                <div>
+                    <p class="eyebrow">Signals</p>
+                    <h3>Fake rate by signal</h3>
+                </div>
+            </div>
+            <canvas id="heatmapChart" class="chart-canvas" height="200"></canvas>
+            <div class="loading-bar" aria-hidden="true"></div>
+        </div>
+    </section>
+
+    <section class="panel glass lift">
+        <div class="panel-head">
+            <div>
+                <p class="eyebrow">Recent submissions</p>
+                <h3>Latest job checks</h3>
+            </div>
+        </div>
+        {% if jobs %}
+        <div class="timeline modern">
+            {% for job in jobs[:6] %}
+            <div class="timeline-item">
+                <div class="dot {{ 'red' if job['result']=='Fake' else 'green' }}"></div>
+                <div class="timeline-card">
+                    <div class="timeline-top">
+                        <span class="pill {{ 'pill-red' if job['result']=='Fake' else 'pill-green' }}">{{ job['result'] }}</span>
+                        <small class="timestamp">{{ job['ts_local'] }}</small>
+                    </div>
+                    <p class="timeline-text">{{ job['description'][:140] }}{% if job['description']|length > 140 %}…{% endif %}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No submissions yet. Start with “Submit Job”.</p>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block dash_scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.4.0/dist/chartjs-chart-matrix.umd.min.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const body = document.body;
+        const openBtn = document.getElementById("sidebar-open");
+        const closeBtn = document.getElementById("sidebar-close");
+        const openSidebar = () => body.classList.add("sidebar-open");
+        const closeSidebar = () => body.classList.remove("sidebar-open");
+        openBtn?.addEventListener("click", openSidebar);
+        closeBtn?.addEventListener("click", closeSidebar);
+
+        const fraudCount = Number('{{ fraud|default(0, true)|tojson }}');
+        const totalCount = Number('{{ total|default(0, true)|tojson }}');
+        const realCount = Number('{{ real|default(0, true)|tojson }}');
+        const denom = Math.max(realCount + fraudCount, 0);
+        const fraudPct = denom > 0 ? Math.round((fraudCount / denom) * 100) : 0;
+        const realPct = denom > 0 ? Math.max(0, 100 - fraudPct) : 0;
+
+        const doughnutCtx = document.getElementById("doughnutChart");
+        if (doughnutCtx) {
+            new Chart(doughnutCtx, {
+                type: "doughnut",
+                data: {
+                    labels: ["Fraud", "Real"],
+                    datasets: [{
+                        data: [fraudPct, realPct],
+                        backgroundColor: ["#f87171", "#22d3ee"],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: "62%",
+                    plugins: {
+                        legend: { labels: { color: "#e5e7eb" } }
+                    },
+                    animation: { duration: 900, easing: "easeOutQuart" }
+                }
+            });
+        }
+
+        const lineCtx = document.getElementById("lineChart");
+        const labels = JSON.parse('{{ trend_labels|default([], true)|tojson }}');
+        const fakeSeries = JSON.parse('{{ trend_fake|default([], true)|tojson }}');
+        const realSeries = JSON.parse('{{ trend_real|default([], true)|tojson }}');
+        if (lineCtx && labels.length) {
+            new Chart(lineCtx, {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "Fake jobs (daily)",
+                            data: fakeSeries,
+                            fill: true,
+                            tension: 0.35,
+                            backgroundColor: "rgba(248,113,113,0.16)",
+                            borderColor: "#f87171",
+                            pointRadius: 4,
+                            pointBackgroundColor: "#f87171",
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: "Real jobs (daily)",
+                            data: realSeries,
+                            fill: true,
+                            tension: 0.35,
+                            backgroundColor: "rgba(34,211,238,0.14)",
+                            borderColor: "#22d3ee",
+                            pointRadius: 4,
+                            pointBackgroundColor: "#22d3ee",
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { ticks: { color: "#9ca3af" }, beginAtZero: true, grace: 0.2 },
+                        x: { ticks: { color: "#9ca3af" } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: "#e5e7eb" } },
+                        tooltip: { intersect: false, mode: "index" }
+                    },
+                    animation: { duration: 900, easing: "easeOutQuart" }
+                }
+            });
+        }
+
+        const scatterCtx = document.getElementById("scatterChart");
+        const scatterPoints = JSON.parse('{{ scatter_points|default([], true)|tojson }}');
+        if (scatterCtx && scatterPoints.length) {
+            new Chart(scatterCtx, {
+                type: "scatter",
+                data: {
+                    datasets: [{
+                        label: "Checks",
+                        data: scatterPoints,
+                        parsing: false,
+                        backgroundColor: scatterPoints.map(p => p.label === "Fake" ? "rgba(248,113,113,0.6)" : "rgba(34,211,238,0.6)"),
+                        borderColor: scatterPoints.map(p => p.label === "Fake" ? "#f87171" : "#22d3ee"),
+                        pointRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: "Word count", color:"#9ca3af" }, ticks:{color:"#9ca3af"} },
+                        y: { title: { display: true, text: "Rule score", color:"#9ca3af" }, ticks:{color:"#9ca3af"}, beginAtZero:true, grace:0.2 }
+                    },
+                    plugins: { legend: { display:false } }
+                }
+            });
+        }
+
+        const heatmapCtx = document.getElementById("heatmapChart");
+        const heatCells = JSON.parse('{{ heatmap_cells|default([], true)|tojson }}');
+        if (heatmapCtx && heatCells.length) {
+            new Chart(heatmapCtx, {
+                type: "bar",
+                data: {
+                    labels: heatCells.map(c => c.signal),
+                    datasets: [{
+                        label: "Fake rate (%)",
+                        data: heatCells.map(c => c.rate),
+                        backgroundColor: heatCells.map(c => `rgba(248,113,113,${0.45 + Math.min(c.rate,100)/250})`),
+                        borderColor: "#f87171",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    scales: {
+                        x: { ticks:{color:"#9ca3af"}, beginAtZero:true, max:100 },
+                        y: { ticks:{color:"#e5e7eb"} }
+                    },
+                    plugins: {
+                        legend: { display:false },
+                        tooltip: { callbacks:{ label: ctx => `${ctx.raw}% fake rate` } }
+                    }
+                }
+            });
+        }
+    });
+    </script>
+{% endblock %}

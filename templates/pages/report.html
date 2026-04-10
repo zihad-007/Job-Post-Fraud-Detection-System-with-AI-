@@ -1,0 +1,21 @@
+{% extends 'components/templates/base.html' %}
+{% set page_title = "Job Submission Result" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Job Submission Result</h2>
+
+    <p><strong>Job Description:</strong></p>
+    <p>{{ job_text }}</p>
+
+    <p><strong>Prediction Result:</strong>
+        <span class="{{ 'fake' if result=='Fake' else 'real' }}">{{ result }}</span>
+    </p>
+
+    <div class="btn-group">
+        <a href="{{ url_for('submit_job') }}" class="btn btn-submit">Submit Another Job</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-dashboard">Go to Dashboard</a>
+        <a href="{{ url_for('generate_report') }}" class="btn btn-report">Download PDF Report</a>
+    </div>
+</div>
+{% endblock %}

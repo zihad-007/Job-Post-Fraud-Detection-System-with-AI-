@@ -1,0 +1,97 @@
+{% extends 'components/templates/base.html' %}
+{% set page_title = "Submit Job | AI Job Fraud Detection" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block body_class %}submit-shell{% endblock %}
+
+{% block content %}
+    <canvas id="submit-particles"></canvas>
+    <div class="submit-gradient"></div>
+    <div class="submit-waves" aria-hidden="true"></div>
+    <div class="floating-shapes">
+        <span class="shape s1"></span>
+        <span class="shape s2"></span>
+        <span class="shape s3"></span>
+        <span class="shape s4"></span>
+        <span class="shape s5"></span>
+        <span class="shape s6"></span>
+    </div>
+
+    <main class="submit-container">
+        <section class="submit-card glass lift" id="card">
+            <header class="submit-head">
+                <div class="chip">Submit job post</div>
+                <div class="title-wrap">
+                    <p class="eyebrow">AI Job Fraud Detection</p>
+                    <h1>Paste your job title or description</h1>
+                    <p class="lede">We’ll run anomaly detection and surface risks in seconds.</p>
+                </div>
+            </header>
+
+            {% if result %}
+            <div class="result {{ 'real' if result=='Real' else 'fake' }}">
+                {{ result }}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="submit-form" id="submit-form">
+                <div class="field floating">
+                    <textarea id="job_text" name="job_text" required>{{ job_text or '' }}</textarea>
+                    <label for="job_text"></label>
+                    <span class="field-underline"></span>
+                    <div class="char-count"><span id="charCount">{{ job_text|length if job_text else 0 }}</span> chars</div>
+                </div>
+
+                <button type="submit" class="btn-gradient" id="submit-btn">
+                    <span>Analyze Job</span>
+                    <i class="fa fa-paper-plane"></i>
+                    <span class="ripple"></span>
+                </button>
+            </form>
+
+            <footer class="submit-footer">
+                <a href="{{ url_for('dashboard') }}" class="ghost-link">Back to dashboard</a>
+            </footer>
+        </section>
+    </main>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% set canvas_id = 'submit-particles' %}
+    {% include 'components/molecules/ambient_particles.html' %}
+    <script>
+    const textarea = document.getElementById("job_text");
+    const counter = document.getElementById("charCount");
+    const form = document.getElementById("submit-form");
+    const card = document.getElementById("card");
+
+    counter.innerText = textarea.value.length;
+    textarea.addEventListener("input", () => {
+        counter.innerText = textarea.value.length;
+        textarea.classList.toggle("has-text", textarea.value.trim().length > 0);
+    });
+
+    form.addEventListener("submit", (e) => {
+        if (!textarea.value.trim()) {
+            e.preventDefault();
+            card.classList.remove("shake");
+            void card.offsetWidth;
+            card.classList.add("shake");
+            textarea.focus();
+        }
+    });
+
+    const btn = document.getElementById("submit-btn");
+    btn.addEventListener("click", (e) => {
+        const ripple = btn.querySelector(".ripple");
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + "px";
+        ripple.style.left = e.clientX - rect.left - size / 2 + "px";
+        ripple.style.top = e.clientY - rect.top - size / 2 + "px";
+        ripple.classList.remove("show");
+        void ripple.offsetWidth;
+        ripple.classList.add("show");
+    });
+    </script>
+{% endblock %}

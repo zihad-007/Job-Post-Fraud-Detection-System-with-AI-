@@ -1,0 +1,23 @@
+<aside class="dash-sidebar" id="dash-sidebar">
+    <div class="sidebar-head">
+        <div class="brand-mark">
+            <i class="fa fa-shield-halved"></i>
+        </div>
+        <span class="brand-title">AI Fraud</span>
+        <button class="icon-btn ghost toggle-sidebar" id="sidebar-close" aria-label="Close menu">
+            <i class="fa fa-chevron-left"></i>
+        </button>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if active == 'dashboard' %}active{% endif %}"><i class="fa fa-grid-2"></i><span>Dashboard</span></a>
+        <a href="{{ url_for('submit_job') }}" class="nav-link {% if active == 'submit' %}active{% endif %}"><i class="fa fa-plus-circle"></i><span>Submit Job</span></a>
+        <a href="{{ url_for('chat') }}" class="nav-link {% if active == 'chat' %}active{% endif %}"><i class="fa fa-robot"></i><span>Ask Gemini</span></a>
+        <a href="{{ url_for('generate_report') }}" class="nav-link"><i class="fa fa-file-arrow-down"></i><span>PDF report</span></a>
+        <a href="{{ url_for('feedback') }}" class="nav-link {% if active == 'feedback' %}active{% endif %}"><i class="fa fa-comment-dots"></i><span>Feedback</span></a>
+        <a href="{{ url_for('logout') }}" class="nav-link"><i class="fa fa-arrow-right-from-bracket"></i><span>Logout</span></a>
+    </nav>
+    <div class="sidebar-foot">
+        <p class="tiny-note">Signed in as</p>
+        <p class="sidebar-user">{{ session['username'] }}</p>
+    </div>
+</aside>

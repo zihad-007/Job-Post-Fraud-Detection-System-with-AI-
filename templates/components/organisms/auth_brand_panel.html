@@ -1,0 +1,20 @@
+{% set stats = stats_data or [] %}
+<div class="brand-chip">AI Job Fraud Detection</div>
+<h1>{{ brand_title }}</h1>
+<p class="lede">
+    {{ brand_lede }}
+    {% if brand_lede_sub %}<span class="lede-sub">{{ brand_lede_sub }}</span>{% endif %}
+</p>
+{% if stats %}
+<div class="stats-row">
+    {% for stat in stats %}
+    <div class="stat-card mini {{ stat.class|default('') }}">
+        <span class="stat-icon logo {{ stat.aura|default('') }}"><i class="{{ stat.icon }}"></i></span>
+        <div class="stat-copy">
+            <span class="stat-label">{{ stat.label }}</span>
+            <span class="stat-value">{{ stat.value }}</span>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+</div>

@@ -1,0 +1,20 @@
+{% extends 'components/templates/base.html' %}
+{% block title %}{{ page_title or 'AI Job Fraud Detection' }}{% endblock %}
+{% block body_class %}{{ body_class or 'login-shell' }}{% endblock %}
+
+{% block content %}
+    {% include 'components/molecules/auth_background.html' %}
+    <div class="login-grid">
+        <section class="brand-panel">
+            {% block brand_panel %}{% endblock %}
+        </section>
+        <section class="auth-card glass elevate">
+            {% block auth_card %}{% endblock %}
+        </section>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% include 'components/molecules/auth_particles.html' %}
+{% endblock %}

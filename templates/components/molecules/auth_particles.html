@@ -1,0 +1,36 @@
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@3/tsparticles.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const defaultConfig = {
+        "background": {"color": "transparent"},
+        "fpsLimit": 60,
+        "fullScreen": {"enable": true, "zIndex": 0},
+        "particles": {
+            "number": {"value": 70, "density": {"enable": true, "area": 800}},
+            "color": {"value": ["#6ee7ff", "#a855f7", "#22d3ee", "#f472b6"]},
+            "opacity": {"value": 0.5},
+            "size": {"value": {"min": 1, "max": 4}},
+            "links": {"enable": true, "distance": 140, "color": "#9ca3af", "opacity": 0.25, "width": 1},
+            "move": {"enable": true, "speed": 1.2, "direction": "none", "outModes": "out"}
+        },
+        "interactivity": {
+            "events": {
+                "onHover": {"enable": true, "mode": "repulse"},
+                "onClick": {"enable": true, "mode": "push"}
+            },
+            "modes": {
+                "repulse": {"distance": 120, "duration": 0.4},
+                "push": {"quantity": 4}
+            }
+        },
+        "detectRetina": true
+    };
+
+    let config = JSON.parse('{{ particle_config | default({}, true) | tojson | safe }}');
+    if (Object.keys(config).length === 0) {
+        config = defaultConfig;
+    }
+
+    tsParticles.load("particles", config);
+});
+</script>

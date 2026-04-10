@@ -1,0 +1,119 @@
+{% extends 'components/templates/auth.html' %}
+{% set page_title = "Register | AI Job Fraud Detection" %}
+{% set body_class = "login-shell register-page" %}
+
+{% block brand_panel %}
+    {% set brand_title = "Create your secure workspace" %}
+    {% set brand_lede = "Register to check frauds, automate anomaly alerts, and keep candidate pipelines clean. Gain real-time signal monitoring, sharable reports, and role-based access to protect every hiring lane." %}
+    {% set stats_data = [
+        {"icon": "fa-solid fa-shield-halved", "label": "Accounts Protected", "value": "12.4k", "aura": "aura-blue", "class": "stat-accounts"},
+        {"icon": "fa fa-clock-rotate-left", "label": "Uptime", "value": "99.99%", "aura": "aura-purple", "class": "stat-uptime"},
+        {"icon": "fa fa-bell", "label": "Avg. Alerts/Day", "value": "3.2k", "aura": "aura-cyan", "class": "stat-alerts"},
+    ] %}
+    {% include 'components/organisms/auth_brand_panel.html' %}
+{% endblock %}
+
+{% block auth_card %}
+    <div class="card-head">
+        <div class="pill">Get started</div>
+        <div class="mini-cta">Have an account? <a href="{{ url_for('login') }}">Login</a></div>
+    </div>
+
+    {% if error %}
+    <div class="error-chip">⚠ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" class="login-form" onsubmit="showLoader()">
+        <div class="field with-icon">
+            <span class="input-icon"><i class="fa fa-user"></i></span>
+            <input class="floating-input" type="text" name="username" id="username" placeholder=" " required>
+            <label class="floating-label" for="username">Username</label>
+        </div>
+
+        <div class="field with-icon">
+            <span class="input-icon"><i class="fa fa-envelope"></i></span>
+            <input class="floating-input" type="text" name="contact" id="contact"
+                   pattern="(^[\\w\\.-]+@[\\w\\.-]+\\.\\w+$)|(^01[3-9]\\d{8}$)" placeholder=" " required>
+            <label class="floating-label" for="contact">Email or Phone</label>
+        </div>
+
+        <div class="field with-icon has-toggle">
+            <span class="input-icon"><i class="fa fa-lock"></i></span>
+            <input class="floating-input" type="password" name="password" id="password" placeholder=" " required>
+            <label class="floating-label" for="password">Password</label>
+            <button type="button" class="toggle-pass" aria-label="Toggle password visibility" onclick="togglePassword()">
+                <i class="fa fa-eye"></i>
+            </button>
+        </div>
+
+        <div class="field with-icon has-indicator">
+            <span class="input-icon"><i class="fa fa-shield"></i></span>
+            <input class="floating-input" type="password" id="confirm-password" placeholder=" " autocomplete="new-password">
+            <label class="floating-label" for="confirm-password">Confirm Password</label>
+            <span class="confirm-indicator" id="confirm-indicator"></span>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn-glow">
+                <span>Create account</span>
+                <i class="fa fa-arrow-right"></i>
+            </button>
+            <div class="loader" id="loader"><i class="fa fa-spinner fa-spin"></i> Creating account...</div>
+        </div>
+    </form>
+
+    <div class="footnote">By signing up you agree to our platform guidelines.</div>
+{% endblock %}
+
+{% set particle_config = {
+    "background": {"color": "transparent"},
+    "fpsLimit": 60,
+    "fullScreen": {"enable": true, "zIndex": 0},
+    "particles": {
+        "number": {"value": 80, "density": {"enable": true, "area": 800}},
+        "color": {"value": ["#6ee7ff", "#a855f7", "#22d3ee", "#f472b6"]},
+        "opacity": {"value": 0.5},
+        "size": {"value": {"min": 1, "max": 4}},
+        "links": {"enable": true, "distance": 130, "color": "#9ca3af", "opacity": 0.25, "width": 1},
+        "move": {"enable": true, "speed": 1.3, "direction": "none", "outModes": "out"}
+    },
+    "interactivity": {
+        "events": { "onHover": {"enable": true, "mode": "repulse"}, "onClick": {"enable": true, "mode": "push"} },
+        "modes": { "repulse": {"distance": 110, "duration": 0.4}, "push": {"quantity": 4} }
+    },
+    "detectRetina": true
+} %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+    function togglePassword() {
+        const pass = document.getElementById("password");
+        if (pass) pass.type = pass.type === "password" ? "text" : "password";
+    }
+
+    function showLoader() {
+        const loader = document.getElementById("loader");
+        if (loader) loader.style.display = "inline-flex";
+    }
+
+    function validateConfirm() {
+        const pwd = document.getElementById("password");
+        const confirm = document.getElementById("confirm-password");
+        const indicator = document.getElementById("confirm-indicator");
+        if (!pwd || !confirm || !indicator) return;
+        const match = confirm.value && confirm.value === pwd.value;
+        indicator.classList.toggle("ok", match);
+        indicator.classList.toggle("warn", confirm.value && !match);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const pwd = document.getElementById("password");
+        const confirm = document.getElementById("confirm-password");
+        if (pwd) ["input", "focus", "blur"].forEach(evt => pwd.addEventListener(evt, validateConfirm));
+        if (confirm) {
+            ["input", "focus", "blur"].forEach(evt => confirm.addEventListener(evt, validateConfirm));
+        }
+    });
+    </script>
+{% endblock %}

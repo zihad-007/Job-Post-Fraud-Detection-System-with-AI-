@@ -1,0 +1,18 @@
+{% extends 'components/templates/base.html' %}
+{% block title %}{{ page_title or 'Dashboard | AI Job Fraud Detection' }}{% endblock %}
+{% block body_class %}dash-shell{% endblock %}
+
+{% block content %}
+    <div class="dash-bg-mesh"></div>
+    <div class="dash-grid">
+        {% include 'components/organisms/sidebar.html' with context %}
+        <main class="dash-main">
+            {% block dash_content %}{% endblock %}
+        </main>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% block dash_scripts %}{% endblock %}
+{% endblock %}
