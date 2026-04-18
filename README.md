@@ -92,7 +92,7 @@ JOB-FRAUD-DETECTION/
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/job-fraud-detection.git
+git clone https://github.com/zihad-007/Job-Post-Fraud-Detection-System-with-AI-.git
 cd job-fraud-detection
 ```
 
